@@ -1,0 +1,5 @@
+FROM apache/airflow:2.9.1
+
+RUN pip install apache-airflow-providers-apache-spark
+
+RUN pip install apache-airflow-providers-apache-hive

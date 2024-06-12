@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  hadoop-namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-namenode
+    platform: linux/amd64
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop-hue.env
+    ports:
+      - "9870:9870"
+    volumes:
+      - hadoop_namenode_data:/hadoop/dfs/name
+
+  hadoop-datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-datanode
+    platform: linux/amd64
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop-hue.env
+    depends_on:
+      - hadoop-namenode
+    volumes:
+      - hadoop_datanode_data:/hadoop/dfs/data
+
+  hadoop-resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-resourcemanager
+    platform: linux/amd64
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop-hue.env
+    ports:
+      - "8088:8088"
+    depends_on:
+      - hadoop-namenode
+
+  hadoop-nodemanager:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-nodemanager
+    platform: linux/amd64
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop-hue.env
+    depends_on:
+      - hadoop-resourcemanager
+
+  hue:
+    image: gethue/hue:latest
+    container_name: hue
+    platform: linux/amd64
+    ports:
+      - "8888:8888"
+    volumes:
+      - hue_data:/data/hue
+    depends_on:
+      - hadoop-namenode
+    environment:
+      - HUE_CONF_DIR=/usr/share/hue/desktop/conf
+    env_file:
+      - ./hadoop-hue.env
+
+volumes:
+  hadoop_namenode_data:
+  hadoop_datanode_data:
+  hue_data:

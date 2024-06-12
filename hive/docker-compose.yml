@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  hive-metastore:
+    image: apache/hive:4.0.0
+    environment:
+      SERVICE_NAME: metastore
+    ports:
+      - "9083:9083"
+    container_name: metastore-standalone
+    command: /opt/hive/bin/hive --service metastore
+
+  hive-server:
+    image: apache/hive:4.0.0
+    environment:
+      SERVICE_NAME: hiveserver2
+    ports:
+      - "10000:10000"
+      - "10002:10002"
+    container_name: hive4
+    depends_on:
+      - hive-metastore
+    command: /opt/hive/bin/hive --service hiveserver2
+
+  hue:
+    image: gethue/hue:latest
+    ports:
+      - "8888:8888"
+    environment:
+      - SECRET_KEY=your_secret_key
+      - HUE_DATABASE_PASSWORD=huepassword
+      - HUE_HIVE_HOST=hive-server
+      - HUE_HIVE_PORT=10000
+    depends_on:
+      - hive-server
